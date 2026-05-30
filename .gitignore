@@ -1,0 +1,27 @@
+# Entorno
+.env
+*.env.local
+
+# Uploads (no subir archivos de clientes)
+uploads/comprobantes/*
+uploads/productos/*
+!uploads/comprobantes/.gitkeep
+!uploads/productos/.gitkeep
+
+# Docker
+docker/data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Composer (si se agrega)
+vendor/
+
+# Logs
+*.log

@@ -1,0 +1,77 @@
+version: '3.9'
+
+# ============================================================
+#  VELVET BEAUTY — Docker Compose (desarrollo local)
+#  Levanta PHP + MySQL + phpMyAdmin con un solo comando
+# ============================================================
+
+services:
+
+  # ── PHP + Apache ───────────────────────────────────────────
+  backend:
+    image: php:8.3-apache
+    container_name: vb_backend
+    ports:
+      - "8000:80"
+    volumes:
+      - ./backend:/var/www/html
+      - ./uploads:/var/www/html/uploads
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      DB_HOST:     db
+      DB_PORT:     3306
+      DB_NAME:     velvet_beauty
+      DB_USER:     velvet
+      DB_PASS:     velvet123
+      JWT_SECRET:  dev_jwt_secret_change_in_prod
+      APP_ENV:     development
+      FRONTEND_URL: "http://localhost:5500"
+      TZ:          America/Bogota
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "
+        apt-get update -qq &&
+        docker-php-ext-install pdo pdo_mysql &&
+        a2enmod rewrite &&
+        service apache2 restart &&
+        apache2-foreground
+      "
+
+  # ── MySQL ──────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: vb_db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE:      velvet_beauty
+      MYSQL_USER:          velvet
+      MYSQL_PASSWORD:      velvet123
+    volumes:
+      - vb_db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uvelvet", "-pvelvet123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── phpMyAdmin ─────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: vb_phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST:     db
+      PMA_USER:     velvet
+      PMA_PASSWORD: velvet123
+    depends_on:
+      - db
+
+volumes:
+  vb_db_data:

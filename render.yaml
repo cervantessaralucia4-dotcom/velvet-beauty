@@ -1,0 +1,34 @@
+# ============================================================
+#  VELVET BEAUTY — render.yaml
+#  Despliega el backend PHP en Render.com (Free tier)
+# ============================================================
+
+services:
+
+  # ── Backend PHP ────────────────────────────────────────────
+  - type: web
+    name: velvet-beauty-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: DB_HOST
+        sync: false         # Lo ingresas manualmente en el dashboard de Render
+      - key: DB_PORT
+        value: "14256"
+      - key: DB_NAME
+        value: velvet_beauty
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: TZ
+        value: America/Bogota
+    healthCheckPath: /api/categorias
