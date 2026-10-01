@@ -1,5 +1,6 @@
 import styles from "./page.module.css";
 import Link from "next/link";
+import CartButton from "@/components/CartButton";
 
 export default function Home() {
   return (
@@ -7,10 +8,11 @@ export default function Home() {
       {/* Navbar Minimal */}
       <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '24px', zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: '1.5rem', fontWeight: 600 }}>Velvet Beauty</div>
-        <div style={{ display: 'flex', gap: '24px', fontSize: '0.9rem', fontWeight: 500 }}>
+        <div style={{ display: 'flex', gap: '24px', fontSize: '0.9rem', fontWeight: 500, alignItems: 'center' }}>
           <Link href="/shop" style={{ transition: 'color var(--transition-fast)' }} className="hover:text-primary">Tienda</Link>
           <Link href="/categories" style={{ transition: 'color var(--transition-fast)' }} className="hover:text-primary">Categorías</Link>
           <Link href="/login" style={{ transition: 'color var(--transition-fast)' }} className="hover:text-primary">Login</Link>
+          <CartButton />
         </div>
       </nav>
 
