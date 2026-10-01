@@ -1,27 +1,41 @@
-# Entorno
-.env
-*.env.local
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Uploads (no subir archivos de clientes)
-uploads/comprobantes/*
-uploads/productos/*
-!uploads/comprobantes/.gitkeep
-!uploads/productos/.gitkeep
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Docker
-docker/data/
+# testing
+/coverage
 
-# IDE
-.vscode/
-.idea/
-*.swp
+# next.js
+/.next/
+/out/
 
-# OS
+# production
+/build
+
+# misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# Composer (si se agrega)
-vendor/
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Logs
-*.log
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
