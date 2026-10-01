@@ -9,14 +9,24 @@ export const metadata = {
   description: 'Explora nuestra selección premium de maquillaje y cuidado personal.',
 }
 
-export default async function ShopPage() {
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
+  const { categoria } = await searchParams;
   
-  // Obtener los productos desde Supabase
-  const { data: productos, error } = await supabase
+  let query = supabase
     .from('productos')
     .select('*, marcas(nombre)')
     .eq('activo', true)
+
+  if (categoria) {
+    query = query.eq('categoria_id', categoria)
+  }
+    
+  const { data: productos, error } = await query;
     
   if (error) {
     console.error('Error al obtener productos:', error)

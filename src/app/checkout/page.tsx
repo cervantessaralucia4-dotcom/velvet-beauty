@@ -22,6 +22,56 @@ export default function CheckoutPage() {
     metodo_pago: 'Efectivo contra entrega',
   });
 
+  // Cupones
+  const [couponCode, setCouponCode] = useState('');
+  const [couponData, setCouponData] = useState<any>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsApplyingCoupon(true);
+    setCouponError('');
+    
+    try {
+      const { data, error } = await supabase
+        .from('cupones')
+        .select('*')
+        .eq('codigo', couponCode.toUpperCase())
+        .eq('activo', true)
+        .single();
+        
+      if (error || !data) {
+        setCouponError('Cupón inválido o expirado.');
+        setCouponData(null);
+        return;
+      }
+      
+      // Chequeos extras: expiración, usos max
+      if (data.fecha_expiracion && new Date(data.fecha_expiracion) < new Date()) {
+        setCouponError('El cupón ha expirado.');
+        setCouponData(null);
+        return;
+      }
+      if (data.usos_max !== null && data.usos_actuales >= data.usos_max) {
+        setCouponError('El cupón ha alcanzado su límite de usos.');
+        setCouponData(null);
+        return;
+      }
+      
+      setCouponData(data);
+    } catch (e) {
+      setCouponError('Error al validar cupón.');
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const discountAmount = couponData 
+    ? (couponData.tipo === 'percent' ? (total * (couponData.descuento / 100)) : couponData.descuento)
+    : 0;
+  const finalTotal = Math.max(0, total - discountAmount);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -47,7 +97,9 @@ export default function CheckoutPage() {
           departamento: formData.departamento,
           metodo_pago: formData.metodo_pago,
           subtotal: total,
-          total: total,
+          total: finalTotal,
+          descuento_total: discountAmount,
+          cupon_id: couponData?.id || null,
           estado: 'pending'
         })
         .select()
@@ -188,6 +240,39 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                <div style={{ marginBottom: '24px', padding: '16px', background: 'var(--bg-color)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <label className={styles.label} style={{ marginBottom: '8px', display: 'block' }}>¿Tienes un cupón de descuento?</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="CÓDIGO" 
+                      className={styles.input}
+                      style={{ flex: 1, textTransform: 'uppercase' }}
+                      disabled={!!couponData || isApplyingCoupon}
+                    />
+                    {!couponData ? (
+                      <button 
+                        onClick={applyCoupon}
+                        disabled={isApplyingCoupon || !couponCode.trim()}
+                        style={{ padding: '0 16px', background: 'var(--text-color)', color: '#fff', borderRadius: '8px', fontWeight: 600 }}
+                      >
+                        Aplicar
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => { setCouponData(null); setCouponCode(''); }}
+                        style={{ padding: '0 16px', background: '#ff4d4f', color: '#fff', borderRadius: '8px', fontWeight: 600 }}
+                      >
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                  {couponError && <p style={{ color: '#ff4d4f', fontSize: '0.85rem', marginTop: '8px' }}>{couponError}</p>}
+                  {couponData && <p style={{ color: '#52c41a', fontSize: '0.85rem', marginTop: '8px' }}>Cupón aplicado con éxito.</p>}
+                </div>
+
                 <div className={styles.summaryTotals}>
                   <div className={styles.totalRow}>
                     <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
@@ -197,9 +282,15 @@ export default function CheckoutPage() {
                     <span style={{ color: 'var(--text-muted)' }}>Envío</span>
                     <span>¡Gratis!</span>
                   </div>
+                  {couponData && (
+                    <div className={styles.totalRow} style={{ color: '#52c41a' }}>
+                      <span>Descuento ({couponCode.toUpperCase()})</span>
+                      <span>-${discountAmount.toLocaleString('es-CO')}</span>
+                    </div>
+                  )}
                   <div className={`${styles.totalRow} ${styles.grandTotal}`}>
                     <span>Total</span>
-                    <span>${total.toLocaleString('es-CO')}</span>
+                    <span>${finalTotal.toLocaleString('es-CO')}</span>
                   </div>
                 </div>
 

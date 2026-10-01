@@ -26,7 +26,12 @@ export default async function AdminDashboard() {
       </header>
 
       <div className={styles.container}>
-        <h2 className={styles.sectionTitle}>Últimos Pedidos</h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>Últimos Pedidos</h2>
+          <a href="/admin/productos/nuevo" style={{ background: 'var(--primary-color)', color: '#fff', padding: '8px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600 }}>
+            + Nuevo Producto
+          </a>
+        </div>
 
         <div className={styles.tableContainer}>
           <table className={styles.table}>
